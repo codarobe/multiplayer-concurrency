@@ -25,7 +25,7 @@ public class networkController : MonoBehaviour {
 
 		HostTopology topology = new HostTopology(config, maxConnections);
 
-		this.hostID = NetworkTransport.AddHost(topology, 8888);
+		hostID = NetworkTransport.AddHost(topology, 8888);
 	}
 	
 	// Update is called once per frame
@@ -37,6 +37,8 @@ public class networkController : MonoBehaviour {
 		int bufferSize = 1024;
 		int dataSize;
 		byte error;
+
+		// May throw a MessageToLong error
 		NetworkEventType recData = NetworkTransport.Receive(out recHostId, out connectionId, out channelId, recBuffer, bufferSize, out dataSize, out error);
 		switch (recData)
 		{
@@ -44,13 +46,27 @@ public class networkController : MonoBehaviour {
 			//Debug.Log("nothing");
 			break;
 		case NetworkEventType.ConnectEvent:    //2
-			Debug.Log("Connection");
+			Debug.Log("Connection Found");
+			//myConnectionID
+			if(hostID == connectionId)
+				//my active connect request approved
+				Debug.Log("Successfully Connected");
+			else
+				//somebody else connect to me
+				Debug.Log("Connection Rejected");
 			break;
 		case NetworkEventType.DataEvent:       //3
 			Debug.Log("Data");
 			break;
 		case NetworkEventType.DisconnectEvent: //4
 			Debug.Log("Disconnection");
+			//myConnectionID
+			if(hostID == connectionId)
+				//cannot connect by some reason see error
+				Debug.Log("Error: Lost connection.");
+			else
+				//one of the established connection has been disconnected
+				Debug.Log("Disconnected");
 			break;
 		}
 	}
