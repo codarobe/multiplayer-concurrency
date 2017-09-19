@@ -7,29 +7,58 @@ using UnityEngine.Networking;
 public class networkController : MonoBehaviour {
 	public int maxConnections;
 	private int hostID;
+	private int connectionID;
 	private int myReliableChannelID;
 	private int myUnreliableChannelID;
+
+	public bool isHost;
+	public string ip;
+	public int port;
 
 	// Use this for initialization
 	void Start () {
 		// Initializing the Transport Layer with no arguments (default settings)
 		NetworkTransport.Init();
-		// An example of initializing the Transport Layer with custom settings
-		GlobalConfig gConfig = new GlobalConfig();
-		gConfig.MaxPacketSize = 500;
-		NetworkTransport.Init(gConfig);
 
 		ConnectionConfig config = new ConnectionConfig();
+		// TCP Connection
 		myReliableChannelID  = config.AddChannel(QosType.Reliable);
+		// UDP Connection
 		myUnreliableChannelID = config.AddChannel(QosType.Unreliable);
 
-		HostTopology topology = new HostTopology(config, maxConnections);
+		if (isHost) {
+			HostTopology topology = new HostTopology (config, maxConnections);
 
-		hostID = NetworkTransport.AddHost(topology, 8888);
+			// Initialized as host
+			hostID = NetworkTransport.AddHost (topology, 8888);
+		} else {
+			connectionID = NetworkTransport.Connect(hostID, "192.16.7.21", 8888, 0, out error);
+
+		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		if (isHost) {
+			receiveData ();
+		} else {
+			sendData ();
+		}
+	}
+
+	void sendData() {
+		int recHostId; 
+		int connectionId; 
+		int channelId; 
+		byte[] recBuffer = new byte[1024]; 
+		int bufferSize = 1024;
+		int dataSize;
+		byte error;
+
+		NetworkTransport.Send(hostID, connectionID, myReiliableChannelID, buffer, bufferLength,  out error);
+	}
+
+	void receiveData() {
 		int recHostId; 
 		int connectionId; 
 		int channelId; 
@@ -69,5 +98,11 @@ public class networkController : MonoBehaviour {
 				Debug.Log("Disconnected");
 			break;
 		}
+	}
+
+	void onApplicationQuit() {
+		byte error;
+
+		NetworkTransport.Disconnect(hostID, connectionID, out error);
 	}
 }
