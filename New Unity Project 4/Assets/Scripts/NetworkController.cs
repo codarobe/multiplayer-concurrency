@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 
-public class networkController : MonoBehaviour {
+public class NetworkController : MonoBehaviour {
 	public int maxConnections;
 	private int hostID;
 	private int connectionID;
@@ -13,15 +13,14 @@ public class networkController : MonoBehaviour {
 	private int myUnreliableChannelID;
 
 	private int[] connections;
+	private int currentConnections = 0;
 
 	public bool isHost;
 	public string ip;
 	public int port;
-
 	// Use this for initialization
 	void Start () {
 		// Initializing the Transport Layer with no arguments (default settings)
-		Debug.Log("HERE");
 		NetworkTransport.Init();
 
 		connections = new int[maxConnections];
@@ -40,28 +39,29 @@ public class networkController : MonoBehaviour {
 
 		byte error;
 		connectionID = NetworkTransport.Connect(hostID, ip, port, 0, out error);
-		receiveData ();
+		//receiveData ();
 		//Debug.Log (error);
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		sendData ();
 		for (int i = 0; i < connections.Length; i++) {
-			receiveData ();
+            sendData();
+			receiveData();
 		}
 	}
 
 	void sendData() {
-		int recHostID; 
-		int recConnectionID; 
-		int channelID; 
-		byte[] recBuffer = new byte[1024]; 
-		int bufferSize = 1024;
-		int dataSize;
 		byte error;
 
-		NetworkTransport.Send(hostID, connectionID, myReliableChannelID, recBuffer, bufferSize,  out error);
+		float moveHorizontal = Input.GetAxis("Horizontal");
+		float moveVertical = Input.GetAxis("Vertical");
+        MovementActionMessage message = new MovementActionMessage(moveHorizontal, moveVertical, 0);
+
+        byte[] messageArray = message.toByteArray();
+
+        NetworkTransport.Send(hostID, connectionID, myReliableChannelID, messageArray, messageArray.Length,  out error);
 	}
 
 	void receiveData() {
@@ -86,19 +86,34 @@ public class networkController : MonoBehaviour {
 			break;
 		case NetworkEventType.ConnectEvent:    //2
 			Debug.Log ("Connection Found");
+                Debug.Log(hostID);
+                Debug.Log(connectionID);
+                Debug.Log(recHostID);
+                Debug.Log(recConnectionID);
 			//myConnectionID
-			if ((hostID == connectionID) && (connections.Length < maxConnections)) {
+			if ((recHostID == connectionID) && (currentConnections < maxConnections)) {
 				//my active connect request approved
 				Debug.Log ("Successfully Connected");
-				connections[connections.Length] = connectionID;
+				connections [currentConnections] = connectionID;
+				currentConnections++;
 			} else {
 				//somebody else connect to me
 				Debug.Log ("Connection Rejected");
 			}
+			Debug.Log (currentConnections);
 			break;
 		case NetworkEventType.DataEvent:       //3
-			Debug.Log("Data");
-			break;
+                Debug.Log("Data");
+                MovementActionMessage message = new MovementActionMessage(recBuffer);
+                Debug.Log(message.getX());
+                Debug.Log(message.getY());
+                Debug.Log(message.getAction());
+
+                GameObject opponent = GameObject.Find("Opponent");
+                Debug.Log(opponent);
+                Done_PlayerController script = opponent.GetComponent<Done_PlayerController>();
+                script.Move(message.getX(), message.getY());
+			    break;
 		case NetworkEventType.DisconnectEvent: //4
 			Debug.Log ("Disconnection");
 			//myConnectionID
@@ -109,6 +124,7 @@ public class networkController : MonoBehaviour {
 				//one of the established connection has been disconnected
 				Debug.Log ("Disconnected");
 			}
+			currentConnections--;
 			break;
 		}
 		

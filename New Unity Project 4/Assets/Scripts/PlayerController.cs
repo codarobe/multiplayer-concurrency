@@ -20,6 +20,9 @@ public class PlayerController : MonoBehaviour
     public GameObject shot;
     public Transform shotSpawn;
     public float fireRate;
+
+	public bool isLocalPlayer;
+
       void Start()
     {
         rb = GetComponent<Rigidbody>(); 
@@ -29,18 +32,28 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButton("Fire1") && Time.time > nextFire) {
             nextFire = Time.time + fireRate;
             //GameObject clone = 
-                Instantiate(shot, shotSpawn.position, shotSpawn.rotation); //as GameObject;
+            Instantiate(shot, shotSpawn.position, shotSpawn.rotation); //as GameObject;
         }
     }
     private void FixedUpdate()
     {
-		Move ();
-        
+        if (isLocalPlayer) {
+			float moveHorizontal = Input.GetAxis("Horizontal");
+			float moveVertical = Input.GetAxis("Vertical");
+
+			Move(moveHorizontal, moveVertical);
+        }
+        else {
+            
+        }
     }
 
-	private void Move() {
-		float moveHorizontal = Input.GetAxis("Horizontal");
-		float moveVertical = Input.GetAxis("Vertical");
+	public void Move(float moveHorizontal, float moveVertical) {
+		
+
+        //Debug.Log(moveHorizontal);
+        //Debug.Log(moveVertical);
+
 		Vector3 movement= new Vector3(moveHorizontal, 0.0f, moveVertical);
 		rb.velocity = movement * speed;
 
