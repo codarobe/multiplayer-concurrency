@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio for Mac
+# Visual Studio 2017
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "New Unity Project 4", "New Unity Project 4.csproj", "{E01469DE-7251-E1CD-68BD-002DCF51F92C}"
 EndProject
 Global
