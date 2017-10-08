@@ -340,13 +340,14 @@ MonoBehaviour:
   speed: 10
   tilt: 5
   boundary:
-    xMin: -6
-    xMax: 6
-    zMin: -4
-    zMax: 8
+    xMin: 0
+    xMax: 0
+    zMin: 0
+    zMax: 0
   shot: {fileID: 100000, guid: 5100e2b874a274947b10dc5f79bd8874, type: 2}
   shotSpawn: {fileID: 325442354}
   fireRate: 0.25
+  isLocalPlayer: 0
 --- !u!64 &270931530
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -447,7 +448,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   explosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
   playerExplosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
-  scoreValue: 0
+  scoreValue: 10
 --- !u!1 &325442353
 GameObject:
   m_ObjectHideFlags: 0
@@ -515,7 +516,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 942746400}
-  - component: {fileID: 942746399}
   m_Layer: 0
   m_Name: Players
   m_TagString: Untagged
@@ -523,27 +523,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &942746399
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 942746398}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05c8e8ffac5b05644b47d81b7ede0d8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 0
-  tilt: 0
-  boundary:
-    xMin: 0
-    xMax: 0
-    zMin: 0
-    zMax: 0
-  shot: {fileID: 0}
-  shotSpawn: {fileID: 0}
-  fireRate: 0
 --- !u!4 &942746400
 Transform:
   m_ObjectHideFlags: 0
@@ -723,7 +702,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!132 &1171993750
 GUIText:
   m_ObjectHideFlags: 0
@@ -943,13 +922,14 @@ MonoBehaviour:
   speed: 10
   tilt: 5
   boundary:
-    xMin: -6
-    xMax: 6
-    zMin: -4
-    zMax: 8
+    xMin: 0
+    xMax: 0
+    zMin: 0
+    zMax: 0
   shot: {fileID: 100000, guid: 5100e2b874a274947b10dc5f79bd8874, type: 2}
   shotSpawn: {fileID: 1816827048}
   fireRate: 0.25
+  isLocalPlayer: 0
 --- !u!64 &1266809523
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1050,7 +1030,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   explosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
   playerExplosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
-  scoreValue: 0
+  scoreValue: 10
 --- !u!1 &1363831535
 GameObject:
   m_ObjectHideFlags: 0
@@ -1534,6 +1514,7 @@ MonoBehaviour:
   spawnWait: 0
   startWait: 0
   waveWait: 0
+  scoreText: {fileID: 1171993750}
   restartText: {fileID: 1363831536}
   gameOverText: {fileID: 2126980976}
 --- !u!4 &1904691132

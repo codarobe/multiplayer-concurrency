@@ -17,3 +17,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Complete-Game/_Complete-Game.unity
     guid: 559faa91fd49ec74bb07e655cefd9d8e
+  - enabled: 1
+    path: Assets/Single_player/single_player.unity
+    guid: 70a2afd9f035e6549abbfd45069a4dd2
