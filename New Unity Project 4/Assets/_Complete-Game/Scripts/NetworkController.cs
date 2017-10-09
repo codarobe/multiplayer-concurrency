@@ -15,15 +15,19 @@ public class NetworkController : MonoBehaviour
 
 	private int[] connections;
 	private int currentConnections = 0;
+    private bool isConnected;
 
 	public bool isHost;
 	public string ip;
-	public int port;
+	public int localPort;
+    public int remotePort;
 	// Use this for initialization
 	void Start()
 	{
 		// Initializing the Transport Layer with no arguments (default settings)
 		NetworkTransport.Init();
+
+        isConnected = false;
 
 		connections = new int[maxConnections];
 
@@ -37,10 +41,10 @@ public class NetworkController : MonoBehaviour
 		HostTopology topology = new HostTopology(config, maxConnections);
 
 		// Initialized as host
-		hostID = NetworkTransport.AddHost(topology, port);
+		hostID = NetworkTransport.AddHost(topology, localPort);
 
 		byte error;
-		connectionID = NetworkTransport.Connect(hostID, ip, port, 0, out error);
+		connectionID = NetworkTransport.Connect(hostID, ip, remotePort, 0, out error);
 		//receiveData ();
 		//Debug.Log (error);
 
@@ -51,7 +55,9 @@ public class NetworkController : MonoBehaviour
 	{
 		for (int i = 0; i < connections.Length; i++)
 		{
-			sendData();
+            if (isConnected) {
+                sendData();
+            }
 			receiveData();
 		}
 	}
@@ -89,35 +95,35 @@ public class NetworkController : MonoBehaviour
 		switch (recData)
 		{
 			case NetworkEventType.Nothing:         //1
-												   //Debug.Log("nothing");
 				break;
 			case NetworkEventType.ConnectEvent:    //2
-				Debug.Log("Connection Found");
-				Debug.Log(hostID);
-				Debug.Log(connectionID);
-				Debug.Log(recHostID);
-				Debug.Log(recConnectionID);
+				Debug.Log("<color=green>Connection Found</color>");
+                Debug.Log("Host ID: " + hostID);
+                Debug.Log("Connection ID: " + connectionID);
+                Debug.Log("RecHost ID: " + recHostID);
+                Debug.Log("RecConnection ID: " + recConnectionID);
 				//myConnectionID
-				if ((recHostID == connectionID) && (currentConnections < maxConnections))
+				if ((recHostID == hostID) && (currentConnections < maxConnections))
 				{
 					//my active connect request approved
-					Debug.Log("Successfully Connected");
+					Debug.Log("<color=green>Successfully Connected</color>");
 					connections[currentConnections] = connectionID;
 					currentConnections++;
+                    isConnected = true;
 				}
 				else
 				{
 					//somebody else connect to me
-					Debug.Log("Connection Rejected");
+					Debug.LogWarning("Connection Rejected");
 				}
 				Debug.Log(currentConnections);
 				break;
 			case NetworkEventType.DataEvent:       //3
 				Debug.Log("Data");
 				MovementActionMessage message = new MovementActionMessage(recBuffer);
-				Debug.Log(message.getX());
-				Debug.Log(message.getY());
-				Debug.Log(message.getAction());
+                Debug.Log("X: " + message.getX());
+                Debug.Log("Y: " + message.getY());
+                Debug.Log("Action: " + message.getAction());
 
 				GameObject opponent = GameObject.Find("Opponent");
 				Debug.Log(opponent);
@@ -131,7 +137,7 @@ public class NetworkController : MonoBehaviour
 				if (hostID == connectionID)
 				{
 					//cannot connect by some reason see error
-					Debug.Log("Error: Lost connection.");
+					Debug.LogWarning("Error: Lost connection.");
 				}
 				else
 				{
