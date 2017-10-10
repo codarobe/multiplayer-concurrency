@@ -12,7 +12,11 @@
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+<<<<<<< HEAD
+    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
+=======
     <TargetFrameworkProfile></TargetFrameworkProfile>
+>>>>>>> ad85a6b2760692fb46351e3c3376930bfb6a968c
     <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
@@ -137,6 +141,17 @@
     <Compile Include="Assets\Main Menu\Scripts\ScrollDetailTexture.cs" />
     <Compile Include="Assets\Main Menu\Scripts\ShowSliderValue.cs" />
     <Compile Include="Assets\Main Menu\Scripts\TiltWindow.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\BGScroller.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\DestroyByBoundary.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\DestroyByContact.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\DestroyByTime.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\EvasiveManeuver.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\GameController.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\Mover.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\PlayerController.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\RandomRotator.cs" />
+    <Compile Include="Assets\Single_player\Assets\_Complete-Game\Scripts\WeaponController.cs" />
+    <Compile Include="Assets\Single_player\Assets\TutorialInfo\Scripts\Readme.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Main Menu\Fonts\Jupiter\LICENSE.txt" />
