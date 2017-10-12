@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 public class MovementActionMessage
@@ -11,18 +12,21 @@ public class MovementActionMessage
 
 	int actionType;
 
-	public MovementActionMessage(float newX, float newY, int action)
+    string identifier;
+
+	public MovementActionMessage(float newX, float newY, int action, string id)
 	{
 		x = newX;
 		y = newY;
 		actionType = action;
+        identifier = id;
 	}
 
 	public MovementActionMessage(byte[] buffer)
 	{
 		MemoryStream ms = new MemoryStream(buffer);
 
-		byte[] data = new byte[4];
+		byte[] data = new byte[1024];
 
 		ms.Read(data, 0, 4);
 
@@ -33,8 +37,14 @@ public class MovementActionMessage
 		y = System.BitConverter.ToSingle(data, 0);
 
 		ms.Read(data, 0, 4);
+        actionType = System.BitConverter.ToInt32(data, 0);
 
-		actionType = System.BitConverter.ToInt32(data, 0);
+        ms.Read(data, 0, 4);
+        int size = System.BitConverter.ToInt32(data, 0);
+
+        ms.Read(data, 0, size);
+        identifier = ASCIIEncoding.ASCII.GetString(data);
+		
 	}
 
 	public byte[] toByteArray()
@@ -44,6 +54,12 @@ public class MovementActionMessage
 		ms.Write(System.BitConverter.GetBytes(x), 0, 4);
 		ms.Write(System.BitConverter.GetBytes(y), 0, 4);
 		ms.Write(System.BitConverter.GetBytes(actionType), 0, 4);
+
+        byte[] idBytes = Encoding.ASCII.GetBytes(identifier);
+        int size = idBytes.Length;
+
+        ms.Write(System.BitConverter.GetBytes(size), 0, 4);
+        ms.Write(idBytes, 0, size);
 
 		return ms.ToArray(); // gets contents regardless of 'position' location
 	}
@@ -62,4 +78,8 @@ public class MovementActionMessage
 	{
 		return actionType;
 	}
+
+    public string getID() {
+        return identifier;
+    }
 }

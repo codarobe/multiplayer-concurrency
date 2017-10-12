@@ -21,6 +21,8 @@ public class NetworkController : MonoBehaviour
 	public string ip;
 	public int localPort;
     public int remotePort;
+
+    private bool idSet = false;
 	// Use this for initialization
 	void Start()
 	{
@@ -30,6 +32,16 @@ public class NetworkController : MonoBehaviour
         isConnected = false;
 
 		connections = new int[maxConnections];
+
+        if (NetworkConfiguration.ipAddress != "") {
+            ip = NetworkConfiguration.ipAddress;
+        }
+        if (NetworkConfiguration.localPort != -1) {
+            localPort = NetworkConfiguration.localPort;
+        }
+        if (NetworkConfiguration.remotePort != -1) {
+            remotePort = NetworkConfiguration.remotePort;
+        }
 
 		ConnectionConfig config = new ConnectionConfig();
 		// TCP Connection
@@ -69,7 +81,7 @@ public class NetworkController : MonoBehaviour
 		float moveHorizontal = Input.GetAxis("Horizontal");
 		float moveVertical = Input.GetAxis("Vertical");
 		int action = (Input.GetButton("Fire1")) ? 1 : 0;
-		MovementActionMessage message = new MovementActionMessage(moveHorizontal, moveVertical, action);
+		MovementActionMessage message = new MovementActionMessage(moveHorizontal, moveVertical, action, "The enemy");
 
 		byte[] messageArray = message.toByteArray();
 
@@ -124,9 +136,18 @@ public class NetworkController : MonoBehaviour
                 Debug.Log("X: " + message.getX());
                 Debug.Log("Y: " + message.getY());
                 Debug.Log("Action: " + message.getAction());
+                Debug.Log("ID: " + message.getID());
+
 
 				GameObject opponent = GameObject.Find("Opponent");
 				Debug.Log(opponent);
+                if (idSet == false)
+                {
+                    PlayerIDController idController = opponent.GetComponent<PlayerIDController>();
+                    idController.text = message.getID();
+                    idController.messagePermanent = true;
+                    idSet = true;
+                }
 				Done_PlayerController script = opponent.GetComponent<Done_PlayerController>();
 				script.Move(message.getX() * (-1), message.getY() * (-1));
 				script.executeAction(message.getAction());

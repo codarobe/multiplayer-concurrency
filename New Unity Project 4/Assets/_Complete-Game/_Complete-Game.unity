@@ -235,6 +235,7 @@ GameObject:
   - component: {fileID: 270931531}
   - component: {fileID: 270931530}
   - component: {fileID: 270931529}
+  - component: {fileID: 270931536}
   - component: {fileID: 270931528}
   - component: {fileID: 270931535}
   m_Layer: 0
@@ -342,8 +343,8 @@ MonoBehaviour:
   boundary:
     xMin: -6
     xMax: 6
-    zMin: -4
-    zMax: 8
+    zMin: 2
+    zMax: 14
   shot: {fileID: 100000, guid: 5100e2b874a274947b10dc5f79bd8874, type: 2}
   shotSpawn: {fileID: 325442354}
   fireRate: 0.25
@@ -449,6 +450,24 @@ MonoBehaviour:
   explosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
   playerExplosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
   scoreValue: 0
+--- !u!114 &270931536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 270931527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e25f8fae3f9446cfb28b1582ac08bae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  guiSkin: {fileID: 11400000, guid: deff0f15a6937401ebdd328ec2804013, type: 2}
+  text: 
+  color: {r: 1, g: 1, b: 1, a: 1}
+  fontSize: 30
+  offsetX: 0.5
+  offsetY: 0.5
+  messagePermanent: 1
 --- !u!1 &325442353
 GameObject:
   m_ObjectHideFlags: 0
@@ -834,6 +853,7 @@ GameObject:
   - component: {fileID: 1266809524}
   - component: {fileID: 1266809523}
   - component: {fileID: 1266809522}
+  - component: {fileID: 1266809529}
   - component: {fileID: 1266809521}
   - component: {fileID: 1266809528}
   m_Layer: 0
@@ -1048,6 +1068,24 @@ MonoBehaviour:
   explosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
   playerExplosion: {fileID: 100008, guid: 7681ad2181a209247a7a75ce664865c2, type: 2}
   scoreValue: 0
+--- !u!114 &1266809529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1266809520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e25f8fae3f9446cfb28b1582ac08bae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  guiSkin: {fileID: 11400000, guid: deff0f15a6937401ebdd328ec2804013, type: 2}
+  text: Player 1
+  color: {r: 1, g: 1, b: 1, a: 1}
+  fontSize: 30
+  offsetX: 0.5
+  offsetY: 0
+  messagePermanent: 1
 --- !u!1 &1363831535
 GameObject:
   m_ObjectHideFlags: 0
@@ -1531,6 +1569,7 @@ MonoBehaviour:
   spawnWait: 0
   startWait: 0
   waveWait: 0
+  scoreText: {fileID: 0}
   restartText: {fileID: 1363831536}
   gameOverText: {fileID: 2126980976}
 --- !u!4 &1904691132
