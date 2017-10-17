@@ -14,8 +14,10 @@ public class Done_PlayerController : MonoBehaviour
 	public Done_Boundary boundary;
 
 	public GameObject shot;
+    public GameObject shot2;
 	public Transform shotSpawn;
 	public float fireRate;
+    public float fireRate2;
 
 	private float nextFire;
 
@@ -27,6 +29,11 @@ public class Done_PlayerController : MonoBehaviour
 		{
 			fire();
 		}
+
+        if(Input.GetButton("Fire2"))
+        {
+            fire2();
+        }
 	}
 
 	bool fire()
@@ -40,6 +47,17 @@ public class Done_PlayerController : MonoBehaviour
 		}
 		return false;
 	}
+    bool fire2()
+    {
+        if (Time.time > nextFire)
+        {
+            nextFire = Time.time + fireRate2;
+            Instantiate(shot2, shotSpawn.position, shotSpawn.rotation);
+            GetComponent<AudioSource>().Play();
+            return true;
+        }
+        return false;
+    }
 
 	void FixedUpdate()
 	{
@@ -87,6 +105,9 @@ public class Done_PlayerController : MonoBehaviour
 			case 1:
 				fire();
 				break;
+            case 2:
+                fire2();
+                break;
 			default:
 				break;
 		}

@@ -3,7 +3,7 @@ using System.Collections;
 
 public class WeaponController : MonoBehaviour
 {
-	public GameObject shot;
+    public GameObject shot;
 	public Transform shotSpawn;
 	public float fireRate;
 	public float delay;
