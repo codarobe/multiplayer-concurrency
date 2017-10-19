@@ -600,12 +600,13 @@ PlayerSettings:
     daydream:
       daydreamIconForeground: {fileID: 0}
       daydreamIconBackground: {fileID: 0}
-  cloudServicesEnabled: {}
+  cloudServicesEnabled:
+    UNet: 1
   facebookSdkVersion: 7.9.1
   apiCompatibilityLevel: 2
-  cloudProjectId: 4713cb2e-2043-4139-a89a-578353676bd9
-  projectName: New Unity Project 4
-  organizationId: rorschachh
+  cloudProjectId: b1db184c-1774-4e5c-b53d-fb79f6db8cf8
+  projectName: SpaceShooter (1)
+  organizationId: aec6874-9254-4f4a-b54f-14633a8d7d5d
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0
