@@ -9,6 +9,7 @@ public class Done_Boundary {
 
 public class Done_PlayerController : MonoBehaviour {
 	public float speed;
+	public float rotationSpeed;
 	public float tilt;
 	//public Done_Boundary boundary;
 
@@ -51,7 +52,6 @@ public class Done_PlayerController : MonoBehaviour {
 
 	void FixedUpdate()
 	{
-		healthSlider.value = playerHealth;
 		if (isLocalPlayer) {
 			float moveHorizontal = Input.GetAxis("Horizontal");
 			float moveVertical = Input.GetAxis("Vertical");
@@ -75,6 +75,8 @@ public class Done_PlayerController : MonoBehaviour {
 			//Mathf.Clamp(GetComponent<Rigidbody>().position.z, boundary.zMin, boundary.zMax)
 		//);
 
+		//gameObject.transform.rotation = Quaternion.Euler(GetComponent<Rigidbody>().velocity.x + gameObject.transform.rotation.x, gameObject.transform.rotation.y, gameObject.transform.rotation.z);
+
 		if (isLocalPlayer) {
 			GetComponent<Rigidbody>().rotation = Quaternion.Euler(0.0f, 0.0f, GetComponent<Rigidbody>().velocity.x * -tilt);
 		}
@@ -94,6 +96,7 @@ public class Done_PlayerController : MonoBehaviour {
 		{
 			playerHealth -= damage;
 		}
+		healthSlider.value = playerHealth;
 	}
 
 	public bool isPlayerDead()

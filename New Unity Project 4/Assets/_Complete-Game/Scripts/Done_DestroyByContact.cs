@@ -48,25 +48,46 @@ public class Done_DestroyByContact : MonoBehaviour
 				//gameController.GameOver();
 			}
 		}
-		else if (explosion != null)
+		else
 		{
-			Instantiate(playerExplosion, other.transform.position, other.transform.rotation);
+			Destroy(gameObject);
 		}
-
-		if (other.tag == "Player")
+		
+		if (other.transform.IsChildOf(parent.transform))
 		{
-			Done_PlayerController playerController = other.GetComponent<Done_PlayerController>();
+			// damage player and despawn if out of health
+			Done_PlayerController playerController = other.gameObject.GetComponent<Done_PlayerController>();
 			playerController.damagePlayer(10);
 			if (playerController.isPlayerDead())
 			{
 				Instantiate(playerExplosion, other.transform.position, other.transform.rotation);
+				if (!playerController.isLocalPlayer)
+				{
+					gameController.AddScore(scoreValue);
+				}
 				Destroy(other.gameObject);
 				//gameController.GameOver();
 			}
 		}
+		else
+		{
+			Destroy(other.gameObject);
+		}
 
-        gameController.AddScore(scoreValue);
-		Destroy (other.gameObject);
-		Destroy (gameObject);
+//		else if (other.tag == "Player")
+//		{
+//			Done_PlayerController playerController = other.GetComponent<Done_PlayerController>();
+//			playerController.damagePlayer(10);
+//			if (playerController.isPlayerDead())
+//			{
+//				Instantiate(playerExplosion, other.transform.position, other.transform.rotation);
+//				Destroy(other.gameObject);
+//				//gameController.GameOver();
+//			}
+//		}
+
+        //gameController.AddScore(scoreValue);
+		//Destroy (other.gameObject);
+		//Destroy (gameObject);
 	}
 }
