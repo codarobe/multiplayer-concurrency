@@ -75,8 +75,8 @@ public class Done_PlayerController : MonoBehaviour {
 			//Mathf.Clamp(GetComponent<Rigidbody>().position.z, boundary.zMin, boundary.zMax)
 		//);
 
-		gameObject.transform.Rotate(0.0f, moveHorizontal * rotationSpeed, 0.0f);
-		Vector3 forwardVel = gameObject.transform.forward * speed * moveVertical;
+		GetComponent<Rigidbody>().transform.Rotate(0.0f, moveHorizontal * rotationSpeed, 0.0f);
+		Vector3 forwardVel = GetComponent<Rigidbody>().transform.forward * speed * moveVertical;
 		//Vector3 horizontalVel = transform.right * speed * moveHorizontal;
  
 		GetComponent<Rigidbody>().velocity = forwardVel;
