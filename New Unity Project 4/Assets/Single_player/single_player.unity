@@ -932,7 +932,6 @@ MonoBehaviour:
   - {fileID: 100000, guid: 7d5f7699d6d1d48e485ac71126e12061, type: 2}
   - {fileID: 100002, guid: 9143e2b62ad50488482f9b73672fc331, type: 2}
   - {fileID: 100002, guid: 834bfaee90a9d4e04b1e8c1ca22cc88e, type: 2}
-  - {fileID: 100002, guid: afc18fc39ade3744397c0c993b57be53, type: 2}
   spawnValues: {x: 6, y: 0, z: 16}
   hazardCount: 10
   spawnWait: 0.75
@@ -1107,7 +1106,7 @@ Prefab:
       objectReference: {fileID: 100000, guid: 11e27c26ac87b40f0a62ec40d7261989, type: 2}
     - target: {fileID: 11400000, guid: 738bdf56857a65f479c367c7b62c4ad7, type: 2}
       propertyPath: fireRate2
-      value: 0.1
+      value: 0.02
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 738bdf56857a65f479c367c7b62c4ad7, type: 2}
