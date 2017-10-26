@@ -152,7 +152,7 @@ public class NetworkManager : MonoBehaviour
                     idSet = true;
                 }
 				Done_PlayerController script = opponent.GetComponent<Done_PlayerController>();
-				script.Move(message.getX() * (-1), message.getY() * (-1));
+				script.Move(message.getX(), message.getY());
 				script.executeAction(message.getAction());
 				break;
 			case NetworkEventType.DisconnectEvent: //4
