@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="$USER_HOME$/Library/Caches/Rider2017.2/resharper-host/local/Transient/ReSharperHost/v10/SolutionCaches/_New Unity Project 4.865905814.00" t="ExcludeRecursive" />
+    <e p="$PROJECT_DIR$" t="IncludeRecursive">
+      <e p="Assembly-CSharp-Editor-firstpass.csproj" t="IncludeRecursive" />
+      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="_Complete-Game" t="Include">
+          <e p="Scripts" t="Include">
+            <e p="Done_BGScroller.cs" t="Include" />
+            <e p="Done_DestroyByBoundary.cs" t="Include" />
+            <e p="Done_DestroyByContact.cs" t="Include" />
+            <e p="Done_DestroyByTime.cs" t="Include" />
+            <e p="Done_EvasiveManeuver.cs" t="Include" />
+            <e p="Done_GameController.cs" t="Include" />
+            <e p="Done_Mover.cs" t="Include" />
+            <e p="Done_PlayerController.cs" t="Include" />
+            <e p="Done_RandomRotator.cs" t="Include" />
+            <e p="Done_WeaponController.cs" t="Include" />
+            <e p="NetworkController.cs" t="Include" />
+            <e p="PlayerIDController.cs" t="Include" />
+          </e>
+        </e>
+        <e p="Lobby" t="Include">
+          <e p="Scripts" t="Include">
+            <e p="NetworkManager.cs" t="Include" />
+          </e>
+        </e>
+        <e p="Main Menu" t="Include">
+          <e p="Fonts" t="Include">
+            <e p="Jupiter" t="Include">
+              <e p="LICENSE.txt" t="Include" />
+            </e>
+          </e>
+          <e p="MainMenu" t="Include">
+            <e p="Fonts" t="Include">
+              <e p="Jupiter" t="Include">
+                <e p="LICENSE.txt" t="Include" />
+              </e>
+            </e>
+            <e p="Textures and Sprites" t="Include">
+              <e p="SF UI" t="Include">
+                <e p="Background" t="Include">
+                  <e p="LICENSE.txt" t="Include" />
+                </e>
+              </e>
+            </e>
+          </e>
+          <e p="Scripts" t="Include">
+            <e p="ActiveStateToggler.cs" t="Include" />
+            <e p="ApplicationManager.cs" t="Include" />
+            <e p="ChangeColor.cs" t="Include" />
+            <e p="DragMe.cs" t="Include" />
+            <e p="DragPanel.cs" t="Include" />
+            <e p="DropMe.cs" t="Include" />
+            <e p="LoadScenceonclick.cs" t="Include" />
+            <e p="PanelManager.cs" t="Include" />
+            <e p="ResizePanel.cs" t="Include" />
+            <e p="ScrollDetailTexture.cs" t="Include" />
+            <e p="ShowSliderValue.cs" t="Include" />
+            <e p="TiltWindow.cs" t="Include" />
+          </e>
+          <e p="Textures and Sprites" t="Include">
+            <e p="SF UI" t="Include">
+              <e p="Background" t="Include">
+                <e p="LICENSE.txt" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+        <e p="Plugins" t="Include">
+          <e p="Editor" t="Include">
+            <e p="JetBrains" t="Include">
+              <e p="Unity3DRider.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="Scripts" t="Include">
+          <e p="Networking" t="Include">
+            <e p="ClientNetworkManager.cs" t="Include" />
+            <e p="MessageType.cs" t="Include" />
+            <e p="MovementActionMessage.cs" t="Include" />
+            <e p="NetworkConfiguration.cs" t="Include" />
+            <e p="NetworkController.cs" t="Include" />
+            <e p="NetworkPlayerController.cs" t="Include" />
+            <e p="StateUpdateMessage.cs" t="Include" />
+            <e p="UserListMessage.cs" t="Include" />
+          </e>
+        </e>
+        <e p="Single_player" t="Include">
+          <e p="Assets" t="Include">
+            <e p="_Complete-Game" t="Include">
+              <e p="Scripts" t="Include">
+                <e p="BGScroller.cs" t="Include" />
+                <e p="DestroyByBoundary.cs" t="Include" />
+                <e p="DestroyByContact.cs" t="Include" />
+                <e p="DestroyByTime.cs" t="Include" />
+                <e p="EvasiveManeuver.cs" t="Include" />
+                <e p="GameController.cs" t="Include" />
+                <e p="Mover.cs" t="Include" />
+                <e p="PlayerController.cs" t="Include" />
+                <e p="RandomRotator.cs" t="Include" />
+                <e p="WeaponController.cs" t="Include" />
+              </e>
+            </e>
+            <e p="TutorialInfo" t="Include">
+              <e p="Scripts" t="Include">
+                <e p="Editor" t="Include">
+                  <e p="ReadmeEditor.cs" t="Include" />
+                </e>
+                <e p="Readme.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+        </e>
+      </e>
+      <e p="Library" t="ExcludeRecursive" />
+      <e p="New Unity Project 4.sln" t="IncludeFlat" />
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="Temp" t="ExcludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+      </e>
+    </e>
+  </component>
+</project>

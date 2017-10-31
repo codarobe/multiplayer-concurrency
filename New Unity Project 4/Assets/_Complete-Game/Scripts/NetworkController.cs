@@ -81,7 +81,7 @@ public class NetworkController : MonoBehaviour
 		float moveHorizontal = Input.GetAxis("Horizontal");
 		float moveVertical = Input.GetAxis("Vertical");
 		int action = (Input.GetButton("Fire1")) ? 1 : 0;
-		MovementActionMessage message = new MovementActionMessage(moveHorizontal, moveVertical, action, "The enemy");
+		MovementActionMessage message = new MovementActionMessage(moveHorizontal, moveVertical, action, "The Enemy");
 
 		byte[] messageArray = message.toByteArray();
 
