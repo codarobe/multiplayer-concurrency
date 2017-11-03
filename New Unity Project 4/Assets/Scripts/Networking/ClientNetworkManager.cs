@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class ClientNetworkManager : MonoBehaviour
+public class ClientNetworkManager
 {
 
 	private bool isConnected = false;
 	
-	private string id;
+	private string id = null;
 	
 	public GameObject player;
 	
@@ -36,14 +36,31 @@ public class ClientNetworkManager : MonoBehaviour
 		return false;
 	}
 
+	// possibly remove this method.  create specific methods to handle each relevant message type
 	public void handleMessage(byte[] message)
 	{
 		
 	}
 
+	public void synchonize(MovementActionMessage message)
+	{
+		// If id hasn't been set, set ID
+		if (id == null)
+		{
+			setIdentifier(message.getID());
+		}
+		// Move player and execute pending action
+		Done_PlayerController script = player.GetComponent<Done_PlayerController>();
+		script.Move(message.getX(), message.getY());
+		script.executeAction(message.getAction());
+	}
+
 	public void setIdentifier(string identifier)
 	{
 		id = identifier;
+		PlayerIDController idController = player.GetComponent<PlayerIDController>();
+		idController.text = identifier;
+		idController.messagePermanent = true;
 	}
 
 	public string getIdentifier()
@@ -54,5 +71,12 @@ public class ClientNetworkManager : MonoBehaviour
 	public void setSpawnPoint(int spawnPoint)
 	{
 		spawnID = spawnPoint;
+	}
+
+	public void spawnPlayer()
+	{
+		// create game object
+		
+		// set location/rotation to designated spawn point
 	}
 }

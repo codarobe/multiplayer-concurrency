@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,13 +10,12 @@ public class NetworkController2
 {
 	public int maxConnections = 8;
 	private int localHostID;
-	private int connectionID;
 	private int unreliableChannelID;
 	private int stateUpdateChannelID;
 
 	private int currentConnections = 0;
 
-	private Dictionary<string, ClientNetworkManager> clientConnections;
+	private Dictionary<int, ClientNetworkManager> clientConnections;
 
 	public bool isHost;
 	public string ip = "127.0.0.1";
@@ -29,7 +29,7 @@ public class NetworkController2
 		// Initializing the Transport Layer with no arguments (default settings)
 		NetworkTransport.Init();
 
-		clientConnections = new Dictionary<string, ClientNetworkManager>(maxConnections);
+		clientConnections = new Dictionary<int, ClientNetworkManager>(maxConnections);
 
         if (NetworkConfiguration.ipAddress != "") {
             ip = NetworkConfiguration.ipAddress;
@@ -57,7 +57,12 @@ public class NetworkController2
 		if (!isHost)
 		{
 			byte error;
-			connectionID = NetworkTransport.Connect(localHostID, ip, remotePort, 0, out error);
+			int connectionID = NetworkTransport.Connect(localHostID, ip, remotePort, 0, out error);
+			NetworkError networkError = (NetworkError) error;
+			if (networkError == NetworkError.Ok)
+			{
+				clientConnections.Add(connectionID, new ClientNetworkManager(localHostID, connectionID, unreliableChannelID, stateUpdateChannelID));
+			}
 		}
 
 	}
@@ -74,17 +79,20 @@ public class NetworkController2
 		MovementActionMessage message = new MovementActionMessage(moveHorizontal, moveVertical, action, NetworkConfiguration.playerName);
 
 		byte[] messageArray = message.toByteArray();
+		
+		broadcastMessage(messageArray);
+	}
 
-		foreach (KeyValuePair<string, ClientNetworkManager> kvp in clientConnections)
+	public void broadcastMessage(byte[] messageArray)
+	{
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
 		{
 			kvp.Value.sendMessage(messageArray);
 			
 		}
-		
-		
 	}
 	
-	void receiveData()
+	public void receiveData()
 	{
 		int remoteHostID;
 		int remoteConnectionID;
@@ -107,14 +115,19 @@ public class NetworkController2
 			case NetworkEventType.ConnectEvent:    //2
 				Debug.Log("<color=green>Connection Found</color>");
                 Debug.Log("Host ID: " + localHostID);
-                Debug.Log("Connection ID: " + connectionID);
                 Debug.Log("RecHost ID: " + remoteHostID);
                 Debug.Log("RecConnection ID: " + remoteConnectionID);
 				//myConnectionID
-				if ((remoteHostID == localHostID) && (currentConnections < maxConnections))
+				if (NetworkConfiguration.allowConnections && (remoteHostID == localHostID) && (currentConnections < maxConnections))
 				{
 					//my active connect request approved
 					Debug.Log("<color=green>Successfully Connected</color>");
+					
+					// add connection to connection list
+					clientConnections.Add(remoteConnectionID, new ClientNetworkManager(localHostID, remoteConnectionID, unreliableChannelID, stateUpdateChannelID));
+					
+					// broadcast connected users' information
+					sendRegisteredUsers(remoteConnectionID);
 					
 					currentConnections++;
 				}
@@ -151,7 +164,7 @@ public class NetworkController2
 			case NetworkEventType.DisconnectEvent: //4
 				Debug.Log("Disconnection");
 				//myConnectionID
-				if (remoteHostID == connectionID)
+				if (remoteHostID == localHostID)
 				{
 					//cannot connect by some reason see error
 					Debug.LogWarning("Error: Lost connection.");
@@ -166,5 +179,17 @@ public class NetworkController2
 		}
 
 
+	}
+
+	public void sendRegisteredUsers(int client)
+	{
+		
+	}
+
+	public void disconnectAll()
+	{
+		// iterate through list and disconnect everyone
+		
+		NetworkTransport.Shutdown();
 	}
 }
