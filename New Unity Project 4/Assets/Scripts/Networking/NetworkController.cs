@@ -4,9 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.Types;
 
 
-public class NetworkController2
+public class NetworkController
 {
 	public int maxConnections = 8;
 	private int localHostID;
@@ -17,14 +18,14 @@ public class NetworkController2
 
 	private Dictionary<int, ClientNetworkManager> clientConnections;
 
-	public bool isHost;
 	public string ip = "127.0.0.1";
 	public int localPort = 4000;
     public int remotePort = 4000;
 
-    private bool idSet = false;
+	public GameObject opponentPrefab;
+
 	// Use this for initialization
-	public NetworkController2()
+	public NetworkController()
 	{
 		// Initializing the Transport Layer with no arguments (default settings)
 		NetworkTransport.Init();
@@ -54,14 +55,14 @@ public class NetworkController2
 		localHostID = NetworkTransport.AddHost(topology, localPort);
 
 	
-		if (!isHost)
+		if (!NetworkConfiguration.isHost)
 		{
 			byte error;
 			int connectionID = NetworkTransport.Connect(localHostID, ip, remotePort, 0, out error);
 			NetworkError networkError = (NetworkError) error;
 			if (networkError == NetworkError.Ok)
 			{
-				clientConnections.Add(connectionID, new ClientNetworkManager(localHostID, connectionID, unreliableChannelID, stateUpdateChannelID));
+				//clientConnections.Add(connectionID, new ClientNetworkManager(localHostID, connectionID, unreliableChannelID, stateUpdateChannelID));
 			}
 		}
 
@@ -150,13 +151,7 @@ public class NetworkController2
 
 				GameObject opponent = GameObject.Find("Opponent");
 				Debug.Log(opponent);
-                if (idSet == false)
-                {
-                    PlayerIDController idController = opponent.GetComponent<PlayerIDController>();
-                    idController.text = message.getID();
-                    idController.messagePermanent = true;
-                    idSet = true;
-                }
+                
 				Done_PlayerController script = opponent.GetComponent<Done_PlayerController>();
 				script.Move(message.getX(), message.getY());
 				script.executeAction(message.getAction());
@@ -183,12 +178,45 @@ public class NetworkController2
 
 	public void sendRegisteredUsers(int client)
 	{
-		
+		string[] identifiers = new String[currentConnections];
+		string[] ipAddresses = new string[currentConnections];
+		int[] ports = new int[currentConnections];
+
+		int i = 0;
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			NetworkID network;
+			NodeID dstNode;
+			byte error;
+			string ipAddress;
+			int port;
+			NetworkTransport.GetConnectionInfo(localHostID, kvp.Key, out ipAddress, out port, out network, out dstNode,
+				out error);
+			identifiers[i] = kvp.Value.getIdentifier();
+			ipAddresses[i] = ipAddress;
+			ports[i] = port;
+
+			i++;
+		}
+		UserListMessage userListMessage = new UserListMessage(identifiers, ipAddresses, ports);
+		broadcastMessage(userListMessage.toByteArray());
+	}
+
+	public void disconnect(int hostID, int connectionID)
+	{
+		byte error;
+		clientConnections.Remove(hostID);
+		NetworkTransport.Disconnect(hostID, connectionID, out error);
 	}
 
 	public void disconnectAll()
 	{
 		// iterate through list and disconnect everyone
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			byte error;
+			NetworkTransport.Disconnect(localHostID, kvp.Key, out error);
+		}
 		
 		NetworkTransport.Shutdown();
 	}

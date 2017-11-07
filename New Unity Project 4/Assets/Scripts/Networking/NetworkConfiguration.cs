@@ -8,7 +8,9 @@ public static class NetworkConfiguration {
 	public static string ipAddress = "";
 	public static bool allowConnections = false;
 
+	public static bool isHost = true;
+
 	public static string playerName = "Luke";
 
-	public static NetworkController2 networkManager = null;
+	public static NetworkController networkController = null;
 }
