@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class ClientQueueController : MonoBehaviour
 {
 	public Text connectedPlayers;
-	public Button startButton;
 
 	private bool readyToStart = false;
 	
@@ -27,32 +26,44 @@ public class ClientQueueController : MonoBehaviour
 		string portInput = GameObject.Find("Multiplayer/SettingsWindow/RemotePortNum").GetComponent<InputField>().text;
 		int port;
 		if (Int32.TryParse(portInput, out port)) {
-			NetworkConfiguration.localPort = port;
+			NetworkConfiguration.remotePort = port;
 		}
 		portInput = GameObject.Find("Multiplayer/SettingsWindow/LocalPortNum").GetComponent<InputField>().text;
 		if (Int32.TryParse(portInput, out port)) {
-			NetworkConfiguration.remotePort = port;
+			NetworkConfiguration.localPort = port;
 		}
 
 		NetworkConfiguration.isHost = false;
-
-		connectedPlayers.text = "(Local) " + NetworkConfiguration.playerName + ": Ready!";
 		
-		NetworkConfiguration.networkController = new NetworkController();
+		Debug.Log("IP: " + NetworkConfiguration.ipAddress);
+		Debug.Log("Local Port: " + NetworkConfiguration.localPort);
+		Debug.Log("Remote Port: " + NetworkConfiguration.remotePort);
+
+		connectedPlayers.text = "(Local) " + NetworkConfiguration.playerName + ": Pending...";
+		
 		NetworkConfiguration.allowConnections = true;
+		NetworkConfiguration.networkController = new NetworkController();
+	}
+	
+	public void updateConnectedPlayers(string players)
+	{	
+		connectedPlayers.text = players;
 	}
 
 	private void OnDisable()
 	{
-		Debug.Log("Queue disabled!");
-		NetworkConfiguration.allowConnections = false;
-		NetworkConfiguration.networkController.disconnectAll();
-		NetworkConfiguration.networkController = null;
+		
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		
+		NetworkConfiguration.networkController.receiveData();
+		
+		if (NetworkConfiguration.networkController.ConnectedPlayersMessage != "")
+		{
+			updateConnectedPlayers(NetworkConfiguration.networkController.ConnectedPlayersMessage);
+		}
 		
 	}
 }

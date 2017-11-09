@@ -1,53 +1,42 @@
-﻿using System.Collections;
+﻿/*
+
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
 using UnityEngine;
 
-public class UserListMessage
-{
-	private string hostID;
+public class StartGameMessage {
 	private string[] identifiers;
-	private string[] ipAddresses;
-	private int[] ports;
-	private bool[] statuses;
+	private int[] spawns;
 
-	public UserListMessage(string[] ids, string[] ips, int[] portNumbers, bool[] statusArray)
+	public StartGameMessage(string[] ids, int[] spawnPoints)
 	{
 		identifiers = ids;
-		ipAddresses = ips;
-		ports = portNumbers;
-		statuses = statusArray;
-		hostID = NetworkConfiguration.playerName;
+		spawns = spawnPoints;
 	}
 
-	public UserListMessage(byte[] buffer)
+	public StartGameMessage(byte[] buffer)
 	{
 		MemoryStream ms = new MemoryStream(buffer);
 
 		byte[] data = new byte[1024];
 
-		// Read id length
 		ms.Read(data, 0, 4);
 		int hostIDLength = System.BitConverter.ToInt32(data, 0);
-		Debug.Log("Read hostid of length: " + hostIDLength);
 
-		// Read ID
 		ms.Read(data, 0, hostIDLength);
 		hostID = ASCIIEncoding.ASCII.GetString(data);
-		Debug.Log("Read host id: " + hostID);
 
-		// Read client count
 		ms.Read(data, 0, 4);
+
 		int clientCount = System.BitConverter.ToInt32(data, 0);
-		Debug.Log("Client count: " + clientCount);
 
 		identifiers = new string[clientCount];
 		ipAddresses = new string[clientCount];
 		ports = new int[clientCount];
 
-		// Read in clientCount ids, ips, and ports
 		for (int i = 0; i < clientCount; i++)
 		{
 			ms.Read(data, 0, 4);
@@ -62,10 +51,6 @@ public class UserListMessage
 
 			ms.Read(data, 0, 4);
 			ports[i] = System.BitConverter.ToInt32(data, 0);
-
-			ms.Read(data, 0, 1);
-			statuses[i] = System.BitConverter.ToBoolean(data, 0);
-
 		}
 		
 	}
@@ -74,17 +59,8 @@ public class UserListMessage
 	{
 		MemoryStream ms = new MemoryStream(1024);
 
-		// Write messsage type
 		ms.Write(System.BitConverter.GetBytes(MessageType.USER_LIST), 0, 4);
 		
-		// Write Host ID Length and Host ID
-		byte[] idData = Encoding.ASCII.GetBytes(hostID);
-		ms.Write(System.BitConverter.GetBytes(idData.Length), 0, 4);
-		ms.Write(idData, 0, idData.Length);
-		
-		// Write identifiers, ips, and ports
-		
-		// Write number of connections
 		ms.Write(System.BitConverter.GetBytes(identifiers.Length), 0, 4);
 
 		for (int i = 0; i < identifiers.Length; i++)
@@ -98,8 +74,6 @@ public class UserListMessage
 			ms.Write(data, 0, data.Length);
 			
 			ms.Write(System.BitConverter.GetBytes(ports[i]), 0, 4);
-			
-			ms.Write(System.BitConverter.GetBytes(statuses[i]), 0, 1);
 		}
 
 		return ms.ToArray(); // gets contents regardless of 'position' location
@@ -125,3 +99,5 @@ public class UserListMessage
 		return hostID;
 	}
 }
+
+*/

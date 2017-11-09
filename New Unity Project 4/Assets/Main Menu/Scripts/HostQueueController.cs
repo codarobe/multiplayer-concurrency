@@ -27,27 +27,31 @@ public class HostQueueController : MonoBehaviour
 		string portInput = GameObject.Find("Multiplayer/SettingsWindow/RemotePortNum").GetComponent<InputField>().text;
 		int port;
 		if (Int32.TryParse(portInput, out port)) {
-			NetworkConfiguration.localPort = port;
+			NetworkConfiguration.remotePort = port;
 		}
 		portInput = GameObject.Find("Multiplayer/SettingsWindow/LocalPortNum").GetComponent<InputField>().text;
 		if (Int32.TryParse(portInput, out port)) {
-			NetworkConfiguration.remotePort = port;
+			NetworkConfiguration.localPort = port;
 		}
 
 		NetworkConfiguration.isHost = true;
 
-		connectedPlayers.text = "(HOST) " + NetworkConfiguration.playerName + ": Ready!";
+		updateConnectedPlayers("(HOST) " + NetworkConfiguration.playerName + ": Ready!");
+		
+		NetworkConfiguration.allowConnections = true;
 		
 		NetworkConfiguration.networkController = new NetworkController();
-		NetworkConfiguration.allowConnections = true;
+		Debug.Log("Network Controller Created");
 	}
 
 	private void OnDisable()
 	{
-		Debug.Log("Queue disabled!");
-		NetworkConfiguration.allowConnections = false;
-		NetworkConfiguration.networkController.disconnectAll();
-		NetworkConfiguration.networkController = null;
+		
+	}
+
+	public void updateConnectedPlayers(string players)
+	{
+		connectedPlayers.text = players;
 	}
 	
 	// Update is called once per frame
@@ -55,7 +59,12 @@ public class HostQueueController : MonoBehaviour
 		
 		NetworkConfiguration.networkController.receiveData();
 
-		if (!readyToStart)
+		if (NetworkConfiguration.networkController.ConnectedPlayersMessage != "")
+		{
+			updateConnectedPlayers(NetworkConfiguration.networkController.ConnectedPlayersMessage);
+		}
+
+		if (!NetworkConfiguration.networkController.arePlayersReady())
 		{
 			startButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "waiting...";
 		}

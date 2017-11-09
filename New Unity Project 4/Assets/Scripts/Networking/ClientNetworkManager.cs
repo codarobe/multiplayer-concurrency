@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class ClientNetworkManager
+public class ClientNetworkManager : MonoBehaviour
 {
 
 	private bool ready = false;
@@ -54,7 +54,7 @@ public class ClientNetworkManager
 		NetworkTransport.Send(hostID, connectionID, stateUpdateChannelID, message, message.Length, out error);
 	}
 
-	public void receiveMessage()
+	/*public void receiveMessage()
 	{
 		// Receive message from connected host
 		int remoteConnectionID;
@@ -66,25 +66,76 @@ public class ClientNetworkManager
 		NetworkEventType eventType = NetworkTransport.ReceiveFromHost(hostID, out remoteConnectionID, out remoteChannelID, recBuffer, bufferSize, out dataSize, out error);
 		
 		handleMessage(recBuffer, eventType);
-	}
+	}*/
 
 	// possibly remove this method.  create specific methods to handle each relevant message type
-	public void handleMessage(byte[] message, NetworkEventType eventType)
+	public void handleMessage(byte[] message, int messageSize, NetworkEventType eventType)
 	{
 
 		string recID;
-
-		int messageType;
 
 		switch (eventType)
 		{
 			case NetworkEventType.Nothing:         
 				break;
-			case NetworkEventType.DataEvent:       
-				Debug.Log("Data");
-				MemoryStream ms = new MemoryStream();
-				MovementActionMessage movementActionMessage = new MovementActionMessage(message);
-                synchronize(movementActionMessage);
+			case NetworkEventType.DataEvent:   
+				Debug.Log("Client data event");
+				MemoryStream ms = new MemoryStream(message);
+				byte[] buffer = new byte[4];
+				ms.Read(buffer, 0, 4);
+				int messageType = System.BitConverter.ToInt32(buffer, 0);
+				buffer = new byte[1024];
+				int size = messageSize - 4;
+				ms.Read(buffer, 0,  size);
+
+				switch (messageType)
+				{
+					case MessageType.MOVEMENT_ACTION:
+						Debug.Log("Movement/Action Message");
+						MovementActionMessage movementActionMessage = new MovementActionMessage(buffer);
+						synchronize(movementActionMessage);
+						break;
+					case MessageType.STATE_UPDATE:
+						Debug.Log("State Update Message");
+						StateUpdateMessage stateUpdateMessage = new StateUpdateMessage(buffer);
+						// registration event
+						if (stateUpdateMessage.getUpdateType() == 3)
+						{
+							Debug.Log("Registered player with id: " + stateUpdateMessage.getID());
+							id = stateUpdateMessage.getID();
+							if (NetworkConfiguration.isHost)
+							{
+								NetworkConfiguration.networkController.sendRegisteredUsers(connectionID);
+							}
+						}
+						// ready event
+						else if (stateUpdateMessage.getUpdateType() == 2)
+						{
+							Debug.Log("Ready Event");
+							ready = true;
+							id = stateUpdateMessage.getID();
+						}
+						break;
+					case MessageType.USER_LIST:
+						Debug.Log("User List Message");
+						UserListMessage listMessage = new UserListMessage(buffer);
+						NetworkConfiguration.networkController.connectAll(listMessage.getIPs(), listMessage.getPorts(), listMessage.getIDs());
+
+						if (!idSet)
+						{
+							id = listMessage.getHostID();
+							idSet = true;
+						}
+						
+						StateUpdateMessage readyMessage = new StateUpdateMessage(2);
+						NetworkConfiguration.networkController.localPlayerReady = true;
+						ready = true;
+						NetworkConfiguration.networkController.broadcastMessage(readyMessage.toByteArray());
+						break;
+					default:
+						Debug.Log("Error: wrong data event type: " + messageType);
+						break;
+				}
 				
 				break;
 			case NetworkEventType.DisconnectEvent: //4
@@ -127,23 +178,32 @@ public class ClientNetworkManager
 		spawnID = spawnPoint;
 	}
 
-	public void spawnPlayer()
+	public void spawnPlayer(bool local)
 	{
 		// get spawnpoint
 		GameObject spawnPoint = GameObject.Find("SpawnPoints/spawn" + spawnID);
-		Transform transform = spawnPoint.GetComponent<Transform>().transform;
-		Vector3 rotation = spawnPoint.GetComponent<Quaternion>().eulerAngles;
+		Vector3 transform = spawnPoint.GetComponent<Transform>().position;
+		Quaternion rotation = spawnPoint.GetComponent<Transform>().rotation;
 
 		// create game object
-		
+		if (local)
+		{
+			player = Instantiate(GameObject.Find("SpawnPoints").GetComponent<OpponentPrefab>().player, transform, rotation);
+		}
+		else
+		{
+			player = Instantiate(GameObject.Find("SpawnPoints").GetComponent<OpponentPrefab>().opponent, transform, rotation);
+		}
 
 		// Set ID
-		//PlayerIDController idController = opponent.GetComponent<PlayerIDController>();
-		//idController.text = message.getID();
-		//idController.messagePermanent = true;
-		//idSet = true;
+		PlayerIDController idController = player.GetComponent<PlayerIDController>();
+		idController.text = id;
+		idController.messagePermanent = true;
 
+	}
 
-		// set location/rotation to designated spawn point
+	public bool isReady()
+	{
+		return ready;
 	}
 }

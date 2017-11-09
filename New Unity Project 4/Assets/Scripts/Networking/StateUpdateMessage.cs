@@ -12,6 +12,7 @@ public class StateUpdateMessage
     public const int START_GAME = 0;
     public const int END_GAME = 1;
     public const int READY = 2;
+    public const int REGISTRATION = 3;
     
     string identifier;
 
@@ -20,6 +21,8 @@ public class StateUpdateMessage
     public StateUpdateMessage(int type)
     {
         updateType = type;
+
+        identifier = NetworkConfiguration.playerName;
     }
 
     public StateUpdateMessage(byte[] buffer)
@@ -51,6 +54,8 @@ public class StateUpdateMessage
         
         ms.Write(System.BitConverter.GetBytes(size), 0, 4);
         ms.Write(idBytes, 0, size);
+        
+        ms.Write(System.BitConverter.GetBytes(updateType), 0, 4);
 
         return ms.ToArray(); // gets contents regardless of 'position' location
     }

@@ -14,7 +14,14 @@ public class NetworkController
 	private int unreliableChannelID;
 	private int stateUpdateChannelID;
 
+	private int hostConnectionID = -1;
+	private int localSpawn;
+
 	private int currentConnections = 0;
+	public string originalPlayerMessage = "";
+	public string ConnectedPlayersMessage = "";
+
+	public bool localPlayerReady = false;
 
 	private Dictionary<int, ClientNetworkManager> clientConnections;
 
@@ -43,9 +50,9 @@ public class NetworkController
         }
 
 		ConnectionConfig config = new ConnectionConfig();
-		// TCP Connection
-		unreliableChannelID = config.AddChannel(QosType.UnreliableSequenced);
 		// UDP Connection
+		unreliableChannelID = config.AddChannel(QosType.UnreliableSequenced);
+		// TCP Connection
 		stateUpdateChannelID = config.AddChannel(QosType.StateUpdate);
 
 
@@ -54,18 +61,28 @@ public class NetworkController
 		// Initialized as host
 		localHostID = NetworkTransport.AddHost(topology, localPort);
 
-	
+
 		if (!NetworkConfiguration.isHost)
 		{
-			byte error;
-			int connectionID = NetworkTransport.Connect(localHostID, ip, remotePort, 0, out error);
-			NetworkError networkError = (NetworkError) error;
-			if (networkError == NetworkError.Ok)
-			{
-				//clientConnections.Add(connectionID, new ClientNetworkManager(localHostID, connectionID, unreliableChannelID, stateUpdateChannelID));
-			}
+			// If not host, connect to host
+			connect(ip, remotePort);
+
+		}
+		else
+		{
+			localPlayerReady = true;
 		}
 
+	}
+
+	public void sendMessage(int peer, byte[] message)
+	{
+		ClientNetworkManager manager = null;
+		clientConnections.TryGetValue(peer, out manager);
+		if (manager != null)
+		{
+			manager.sendMessage(message);
+		}
 	}
 
 
@@ -95,6 +112,8 @@ public class NetworkController
 	
 	public void receiveData()
 	{
+		//Debug.Log(currentConnections);
+		
 		int remoteHostID;
 		int remoteConnectionID;
 		int channelID;
@@ -108,6 +127,14 @@ public class NetworkController
 		NetworkEventType recData = NetworkTransport.Receive(out remoteHostID, out remoteConnectionID, out channelID, recBuffer, bufferSize, out dataSize, out error);
 
 		//Debug.Log (error);
+
+		if (dataSize > 0)
+		{
+			Debug.Log("Bytes received: " + dataSize);
+		}
+		
+		
+		
 
 		switch (recData)
 		{
@@ -125,36 +152,45 @@ public class NetworkController
 					Debug.Log("<color=green>Successfully Connected</color>");
 					
 					// add connection to connection list
-					clientConnections.Add(remoteConnectionID, new ClientNetworkManager(localHostID, remoteConnectionID, unreliableChannelID, stateUpdateChannelID));
+					ClientNetworkManager manager =
+						new ClientNetworkManager(remoteHostID, remoteConnectionID, unreliableChannelID, stateUpdateChannelID);
+					clientConnections.Add(remoteConnectionID, manager);
+					StateUpdateMessage stateUpdateMessage = new StateUpdateMessage(3);
+					manager.sendMessage(stateUpdateMessage.toByteArray());
+					Debug.Log("Successfully connected.  Sent registration message.");
 					
 					// broadcast connected users' information
-					sendRegisteredUsers(remoteConnectionID);
+					if (NetworkConfiguration.isHost)
+					{
+						sendRegisteredUsers(remoteConnectionID);
+						Debug.Log("Sent Registered Users");
+					}
+					else
+					{
+						if (hostConnectionID == -1)
+						{
+							hostConnectionID = remoteConnectionID;
+						}
+					}
 					
 					currentConnections++;
 				}
 				else
 				{
 					//somebody else connect to me
-					Debug.LogWarning("Connection Rejected");
+					Debug.LogWarning("<color=red>Connection Rejected</color>");
 				}
-				Debug.Log(currentConnections);
+				Debug.Log(currentConnections + " Players Connected!");
 				break;
 			case NetworkEventType.DataEvent:       //3
+				// route the message to the correct controller
 				Debug.Log("Data");
-				MemoryStream ms = new MemoryStream();
-				MovementActionMessage message = new MovementActionMessage(recBuffer);
-                Debug.Log("X: " + message.getX());
-                Debug.Log("Y: " + message.getY());
-                Debug.Log("Action: " + message.getAction());
-                Debug.Log("ID: " + message.getID());
-
-
-				GameObject opponent = GameObject.Find("Opponent");
-				Debug.Log(opponent);
-                
-				Done_PlayerController script = opponent.GetComponent<Done_PlayerController>();
-				script.Move(message.getX(), message.getY());
-				script.executeAction(message.getAction());
+				ClientNetworkManager clientNetworkManager = null;
+				clientConnections.TryGetValue(remoteConnectionID, out clientNetworkManager);
+				if (clientNetworkManager != null)
+				{
+					clientNetworkManager.handleMessage(recBuffer, dataSize, recData);
+				}
 				break;
 			case NetworkEventType.DisconnectEvent: //4
 				Debug.Log("Disconnection");
@@ -163,6 +199,7 @@ public class NetworkController
 				{
 					//cannot connect by some reason see error
 					Debug.LogWarning("Error: Lost connection.");
+					disconnect(remoteHostID, remoteConnectionID);
 				}
 				else
 				{
@@ -173,51 +210,202 @@ public class NetworkController
 				break;
 		}
 
+		updateConnectedPlayerMessage();
 
+
+	}
+
+	public void updateConnectedPlayerMessage()
+	{
+		string message = "";
+		if (NetworkConfiguration.isHost)
+		{
+			message += "(HOST)" + " " + NetworkConfiguration.playerName + ": ";
+
+		}
+		else
+		{
+			message += "(LOCAL)" + " " + NetworkConfiguration.playerName + ": ";
+		}
+		if (localPlayerReady)
+		{
+			message += "Ready!\n ";
+		}
+		else
+		{
+			message += "Pending...\n ";
+		}
+
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			if (!NetworkConfiguration.isHost && kvp.Key == hostConnectionID)
+			{
+				message += "(HOST) ";
+			}
+			message += kvp.Value.getIdentifier() + ": ";
+			if (kvp.Value.isReady())
+			{
+				message += "Ready!\n ";
+			}
+			else
+			{
+				message += "Pending...\n ";
+			}
+		}
+
+		ConnectedPlayersMessage = message;
 	}
 
 	public void sendRegisteredUsers(int client)
 	{
-		string[] identifiers = new String[currentConnections];
+		string[] identifiers = new string[currentConnections];
 		string[] ipAddresses = new string[currentConnections];
 		int[] ports = new int[currentConnections];
+		bool[] statuses = new bool[currentConnections];
 
 		int i = 0;
 		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
 		{
-			NetworkID network;
-			NodeID dstNode;
-			byte error;
-			string ipAddress;
-			int port;
-			NetworkTransport.GetConnectionInfo(localHostID, kvp.Key, out ipAddress, out port, out network, out dstNode,
-				out error);
-			identifiers[i] = kvp.Value.getIdentifier();
-			ipAddresses[i] = ipAddress;
-			ports[i] = port;
+			if (kvp.Key != client)
+			{
+				NetworkID network;
+				NodeID dstNode;
+				byte error;
+				string ipAddress;
+				int port;
+				NetworkTransport.GetConnectionInfo(localHostID, kvp.Key, out ipAddress, out port, out network, out dstNode,
+					out error);
+				identifiers[i] = kvp.Value.getIdentifier();
+				ipAddresses[i] = ipAddress;
+				ports[i] = port;
+				statuses[i] = kvp.Value.isReady();
 
-			i++;
+				i++;
+			}
+			
 		}
-		UserListMessage userListMessage = new UserListMessage(identifiers, ipAddresses, ports);
-		broadcastMessage(userListMessage.toByteArray());
+		UserListMessage userListMessage = new UserListMessage(identifiers, ipAddresses, ports, statuses);
+		
+		sendMessage(client, userListMessage.toByteArray());
+	}
+
+	public bool arePlayersReady()
+	{
+		if (currentConnections < 1)
+		{
+			return false;
+		}
+
+		bool status = true;
+		
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			if (!kvp.Value.isReady())
+			{
+				status = false;
+			}
+		}
+		return status;
 	}
 
 	public void disconnect(int hostID, int connectionID)
 	{
 		byte error;
 		clientConnections.Remove(hostID);
+		currentConnections--;
 		NetworkTransport.Disconnect(hostID, connectionID, out error);
+	}
+
+	public void connect(string ipAddress, int port)
+	{
+		byte error;
+		int connectionID = NetworkTransport.Connect(localHostID, ipAddress, port, 0, out error);
+		Debug.Log("Sent Connection to Host");
+		NetworkError networkError = (NetworkError) error;
+		if (networkError == NetworkError.Ok)
+		{
+			//ClientNetworkManager manager = new ClientNetworkManager(localHostID, connectionID, unreliableChannelID, stateUpdateChannelID);
+			//clientConnections.Add(connectionID, manager);
+			//currentConnections++;
+			//StateUpdateMessage stateUpdateMessage = new StateUpdateMessage(3);
+			//manager.sendMessage(stateUpdateMessage.toByteArray());
+			//Debug.Log("Successfully connected.  Sent registration message.");
+		}
+		else
+		{
+			Debug.Log("Error connecting to host");
+		}
+	}
+
+	public void connectWithID(string ipAddress, int port, string identifier)
+	{
+		byte error;
+		int connectionID = NetworkTransport.Connect(localHostID, ipAddress, port, 0, out error);
+		NetworkError networkError = (NetworkError) error;
+		if (networkError == NetworkError.Ok)
+		{
+			ClientNetworkManager manager = new ClientNetworkManager(identifier, localHostID, connectionID, unreliableChannelID,
+				stateUpdateChannelID);
+			clientConnections.Add(connectionID, manager);
+			currentConnections++;
+			StateUpdateMessage stateUpdateMessage = new StateUpdateMessage(3);
+			manager.sendMessage(stateUpdateMessage.toByteArray());
+			
+		}
+	}
+
+	public void connectAll(string[] ipAddresses, int[] ports, string[] identifiers)
+	{
+		for (int i = 0; i < ipAddresses.Length; i++)
+		{
+			connectWithID(ipAddresses[i], ports[i], identifiers[i]);
+		}
 	}
 
 	public void disconnectAll()
 	{
+		NetworkConfiguration.allowConnections = false;
 		// iterate through list and disconnect everyone
 		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
 		{
 			byte error;
 			NetworkTransport.Disconnect(localHostID, kvp.Key, out error);
+			currentConnections--;
 		}
+
+		clientConnections = null;
+		
 		
 		NetworkTransport.Shutdown();
+	}
+
+	public void startGame()
+	{
+		int i = 1;
+
+		string[] ids = new string[currentConnections];
+		int[] spawns = new int[currentConnections];
+		
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			kvp.Value.setSpawnPoint(i);
+			ids[i] = kvp.Value.getIdentifier();
+			spawns[i] = i;
+			i++;
+		}
+
+		localSpawn = i;
+
+		// create message and broadcast
+	}
+
+	public void spawnPlayers()
+	{
+		// spawn remote players
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			kvp.Value.spawnPlayer(false);
+		}
+		// spawn local player
 	}
 }
