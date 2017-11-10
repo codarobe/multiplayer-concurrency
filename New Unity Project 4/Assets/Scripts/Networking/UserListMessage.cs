@@ -35,7 +35,7 @@ public class UserListMessage
 
 		// Read ID
 		ms.Read(data, 0, hostIDLength);
-		hostID = ASCIIEncoding.ASCII.GetString(data);
+		hostID = ASCIIEncoding.ASCII.GetString(data).TrimEnd('\0');
 		Debug.Log("Read host id: " + hostID);
 
 		// Read client count
@@ -46,6 +46,7 @@ public class UserListMessage
 		identifiers = new string[clientCount];
 		ipAddresses = new string[clientCount];
 		ports = new int[clientCount];
+		statuses = new bool[clientCount];
 
 		// Read in clientCount ids, ips, and ports
 		for (int i = 0; i < clientCount; i++)
@@ -53,12 +54,12 @@ public class UserListMessage
 			ms.Read(data, 0, 4);
 			int idLength = System.BitConverter.ToInt32(data, 0);
 			ms.Read(data, 0, idLength);
-			identifiers[i] = ASCIIEncoding.ASCII.GetString(data);
+			identifiers[i] = ASCIIEncoding.ASCII.GetString(data).TrimEnd('\0');
 
 			ms.Read(data, 0, 4);
 			int addressLength = System.BitConverter.ToInt32(data, 0);
 			ms.Read(data, 0, addressLength);
-			ipAddresses[i] = ASCIIEncoding.ASCII.GetString(data);
+			ipAddresses[i] = ASCIIEncoding.ASCII.GetString(data).TrimEnd('\0');
 
 			ms.Read(data, 0, 4);
 			ports[i] = System.BitConverter.ToInt32(data, 0);
@@ -81,14 +82,15 @@ public class UserListMessage
 		byte[] idData = Encoding.ASCII.GetBytes(hostID);
 		ms.Write(System.BitConverter.GetBytes(idData.Length), 0, 4);
 		ms.Write(idData, 0, idData.Length);
-		
-		// Write identifiers, ips, and ports
+
 		
 		// Write number of connections
 		ms.Write(System.BitConverter.GetBytes(identifiers.Length), 0, 4);
 
+		// Write identifiers, ips, and ports
 		for (int i = 0; i < identifiers.Length; i++)
 		{
+			Debug.Log(identifiers[i]);
 			byte[] data = Encoding.ASCII.GetBytes(identifiers[i]);
 			ms.Write(System.BitConverter.GetBytes(data.Length), 0, 4);
 			ms.Write(data, 0, data.Length);

@@ -4,8 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
-public class ClientNetworkManager : MonoBehaviour
+public class ClientNetworkManager
 {
 
 	private bool ready = false;
@@ -13,7 +14,7 @@ public class ClientNetworkManager : MonoBehaviour
 	private string id = "";
 	private bool idSet = false;
 	
-	public GameObject player;
+	public GameObject player = null;
 	
 	private int hostID;
 	private int connectionID;
@@ -84,7 +85,7 @@ public class ClientNetworkManager : MonoBehaviour
 				byte[] buffer = new byte[4];
 				ms.Read(buffer, 0, 4);
 				int messageType = System.BitConverter.ToInt32(buffer, 0);
-				buffer = new byte[1024];
+				buffer = new byte[2048];
 				int size = messageSize - 4;
 				ms.Read(buffer, 0,  size);
 
@@ -102,7 +103,11 @@ public class ClientNetworkManager : MonoBehaviour
 						if (stateUpdateMessage.getUpdateType() == 3)
 						{
 							Debug.Log("Registered player with id: " + stateUpdateMessage.getID());
-							id = stateUpdateMessage.getID();
+							if (!idSet)
+							{
+								id = stateUpdateMessage.getID();
+								idSet = true;
+							}
 							if (NetworkConfiguration.isHost)
 							{
 								NetworkConfiguration.networkController.sendRegisteredUsers(connectionID);
@@ -132,6 +137,13 @@ public class ClientNetworkManager : MonoBehaviour
 						ready = true;
 						NetworkConfiguration.networkController.broadcastMessage(readyMessage.toByteArray());
 						break;
+					case MessageType.START_GAME:
+						Debug.Log("START GAME");
+						NetworkConfiguration.allowConnections = false;
+						StartGameMessage gameMessage = new StartGameMessage(buffer);
+						NetworkConfiguration.networkController.setSpawns(gameMessage.getIDs(), gameMessage.getSpawns(), gameMessage.getHostSpawn());
+						SceneManager.LoadScene(1);
+						break;
 					default:
 						Debug.Log("Error: wrong data event type: " + messageType);
 						break;
@@ -144,12 +156,6 @@ public class ClientNetworkManager : MonoBehaviour
 				
 				break;
 		}
-		
-		// If we haven't set the player to the correct ID yet, do it
-		if (idSet == false)
-		{
-			//id = recID;
-		}
 	}
 
 	// update player position/orientation/action
@@ -161,12 +167,14 @@ public class ClientNetworkManager : MonoBehaviour
 		script.executeAction(message.getAction());
 	}
 
+	/*
 	private void setIdentifier()
 	{
 		PlayerIDController idController = player.GetComponent<PlayerIDController>();
 		idController.text = id;
 		idController.messagePermanent = true;
 	}
+	*/
 
 	public string getIdentifier()
 	{
@@ -178,29 +186,36 @@ public class ClientNetworkManager : MonoBehaviour
 		spawnID = spawnPoint;
 	}
 
+	public int getSpawnPoint()
+	{
+		return spawnID;
+	}
+
+	/*
 	public void spawnPlayer(bool local)
 	{
 		// get spawnpoint
-		GameObject spawnPoint = GameObject.Find("SpawnPoints/spawn" + spawnID);
-		Vector3 transform = spawnPoint.GetComponent<Transform>().position;
-		Quaternion rotation = spawnPoint.GetComponent<Transform>().rotation;
+		//GameObject spawnPoint = GameObject.Find("SpawnPoints/spawn" + spawnID);
+		//Vector3 transform = spawnPoint.GetComponent<Transform>().position;
+		//Quaternion rotation = spawnPoint.GetComponent<Transform>().rotation;
 
 		// create game object
 		if (local)
 		{
-			player = Instantiate(GameObject.Find("SpawnPoints").GetComponent<OpponentPrefab>().player, transform, rotation);
+			//player = Instantiate(GameObject.Find("SpawnPoints").GetComponent<OpponentPrefab>().player, transform, rotation);
 		}
 		else
 		{
-			player = Instantiate(GameObject.Find("SpawnPoints").GetComponent<OpponentPrefab>().opponent, transform, rotation);
+			//player = Instantiate(GameObject.Find("SpawnPoints").GetComponent<OpponentPrefab>().opponent, transform, rotation);
 		}
 
 		// Set ID
-		PlayerIDController idController = player.GetComponent<PlayerIDController>();
-		idController.text = id;
-		idController.messagePermanent = true;
+		//PlayerIDController idController = player.GetComponent<PlayerIDController>();
+		//idController.text = id;
+		//idController.messagePermanent = true;
 
 	}
+	*/
 
 	public bool isReady()
 	{

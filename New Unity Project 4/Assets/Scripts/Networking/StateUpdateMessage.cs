@@ -9,8 +9,8 @@ using UnityEngine;
 public class StateUpdateMessage
 {
 
-    public const int START_GAME = 0;
-    public const int END_GAME = 1;
+    //public const int START_GAME = 0;
+    //public const int END_GAME = 1;
     public const int READY = 2;
     public const int REGISTRATION = 3;
     
@@ -37,7 +37,7 @@ public class StateUpdateMessage
 
         ms.Read(data, 0, identifierLength);
 
-        identifier = ASCIIEncoding.ASCII.GetString(data);
+        identifier = ASCIIEncoding.ASCII.GetString(data).TrimEnd('\0');
 
         ms.Read(data, 0, 4);
         updateType = System.BitConverter.ToInt32(data, 0);

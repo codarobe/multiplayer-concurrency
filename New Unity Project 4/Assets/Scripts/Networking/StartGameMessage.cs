@@ -1,4 +1,4 @@
-﻿/*
+﻿
 
 using System.Collections;
 using System.Collections.Generic;
@@ -11,72 +11,73 @@ public class StartGameMessage {
 	private string[] identifiers;
 	private int[] spawns;
 
-	public StartGameMessage(string[] ids, int[] spawnPoints)
+	private int hostSpawn;
+
+	public StartGameMessage(string[] ids, int[] spawnPoints, int hostSpawnID)
 	{
 		identifiers = ids;
 		spawns = spawnPoints;
+		hostSpawn = hostSpawnID;
 	}
 
 	public StartGameMessage(byte[] buffer)
 	{
 		MemoryStream ms = new MemoryStream(buffer);
 
-		byte[] data = new byte[1024];
+		byte[] data = new byte[2048];
 
+		// Read host spawn
 		ms.Read(data, 0, 4);
-		int hostIDLength = System.BitConverter.ToInt32(data, 0);
+		hostSpawn = System.BitConverter.ToInt32(data, 0);
 
-		ms.Read(data, 0, hostIDLength);
-		hostID = ASCIIEncoding.ASCII.GetString(data);
-
+		// Read ID Count
 		ms.Read(data, 0, 4);
+		int idCount = System.BitConverter.ToInt32(data, 0);
 
-		int clientCount = System.BitConverter.ToInt32(data, 0);
+		identifiers = new string[idCount];
+		spawns = new int[idCount];
 
-		identifiers = new string[clientCount];
-		ipAddresses = new string[clientCount];
-		ports = new int[clientCount];
-
-		for (int i = 0; i < clientCount; i++)
+		for (int i = 0; i < idCount; i++)
 		{
 			ms.Read(data, 0, 4);
 			int idLength = System.BitConverter.ToInt32(data, 0);
 			ms.Read(data, 0, idLength);
-			identifiers[i] = ASCIIEncoding.ASCII.GetString(data);
+			identifiers[i] = ASCIIEncoding.ASCII.GetString(data).TrimEnd('\0');
 
 			ms.Read(data, 0, 4);
-			int addressLength = System.BitConverter.ToInt32(data, 0);
-			ms.Read(data, 0, addressLength);
-			ipAddresses[i] = ASCIIEncoding.ASCII.GetString(data);
-
-			ms.Read(data, 0, 4);
-			ports[i] = System.BitConverter.ToInt32(data, 0);
+			spawns[i] = System.BitConverter.ToInt32(data, 0);
+			
 		}
 		
 	}
 
 	public byte[] toByteArray()
 	{
-		MemoryStream ms = new MemoryStream(1024);
+		MemoryStream ms = new MemoryStream(2048);
 
-		ms.Write(System.BitConverter.GetBytes(MessageType.USER_LIST), 0, 4);
+		// Write message type
+		ms.Write(System.BitConverter.GetBytes(MessageType.START_GAME), 0, 4);
 		
+		// Write host spawn
+		ms.Write(System.BitConverter.GetBytes(hostSpawn), 0, 4);
+		
+		// Write identifier type
 		ms.Write(System.BitConverter.GetBytes(identifiers.Length), 0, 4);
 
 		for (int i = 0; i < identifiers.Length; i++)
 		{
+			// Write id length and id
 			byte[] data = Encoding.ASCII.GetBytes(identifiers[i]);
 			ms.Write(System.BitConverter.GetBytes(data.Length), 0, 4);
 			ms.Write(data, 0, data.Length);
 
-			data = Encoding.ASCII.GetBytes(ipAddresses[i]);
-			ms.Write(System.BitConverter.GetBytes(data.Length), 0, 4);
-			ms.Write(data, 0, data.Length);
+			// Write spawn
+			ms.Write(System.BitConverter.GetBytes(spawns[i]), 0, 4);
 			
-			ms.Write(System.BitConverter.GetBytes(ports[i]), 0, 4);
 		}
 
-		return ms.ToArray(); // gets contents regardless of 'position' location
+		// return the byte array
+		return ms.ToArray();
 	}
 
 	public string[] getIDs()
@@ -84,20 +85,18 @@ public class StartGameMessage {
 		return identifiers;
 	}
 
-	public string[] getIPs()
+
+
+	public int[] getSpawns()
 	{
-		return ipAddresses;
+		return spawns;
 	}
 
-	public int[] getPorts()
+	public int getHostSpawn()
 	{
-		return ports;
+		return hostSpawn;
 	}
 
-	public string getHostID()
-	{
-		return hostID;
-	}
 }
 
-*/
+

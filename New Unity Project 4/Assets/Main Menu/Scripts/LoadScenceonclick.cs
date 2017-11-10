@@ -12,6 +12,7 @@ public class LoadScenceonclick : MonoBehaviour {
         if (sceneIndex == 1 && NetworkConfiguration.isHost)
         {
             NetworkConfiguration.networkController.startGame();
+            Debug.Log("Transition Scene");
             SceneManager.LoadScene(sceneIndex);
         }
         else if (sceneIndex != 1)

@@ -9,10 +9,11 @@ using UnityEngine.Networking.Types;
 
 public class NetworkController
 {
-	public int maxConnections = 8;
+	public int maxConnections = 4;
 	private int localHostID;
 	private int unreliableChannelID;
 	private int stateUpdateChannelID;
+	private int allCostChannelID;
 
 	private int hostConnectionID = -1;
 	private int localSpawn;
@@ -22,6 +23,7 @@ public class NetworkController
 	public string ConnectedPlayersMessage = "";
 
 	public bool localPlayerReady = false;
+	public GameObject localPlayer = null;
 
 	private Dictionary<int, ClientNetworkManager> clientConnections;
 
@@ -29,8 +31,7 @@ public class NetworkController
 	public int localPort = 4000;
     public int remotePort = 4000;
 
-	public GameObject opponentPrefab;
-
+	
 	// Use this for initialization
 	public NetworkController()
 	{
@@ -54,6 +55,8 @@ public class NetworkController
 		unreliableChannelID = config.AddChannel(QosType.UnreliableSequenced);
 		// TCP Connection
 		stateUpdateChannelID = config.AddChannel(QosType.StateUpdate);
+		// Super TCP Connection
+		allCostChannelID = config.AddChannel(QosType.AllCostDelivery);
 
 
 		HostTopology topology = new HostTopology(config, maxConnections);
@@ -117,8 +120,8 @@ public class NetworkController
 		int remoteHostID;
 		int remoteConnectionID;
 		int channelID;
-		byte[] recBuffer = new byte[1024];
-		int bufferSize = 1024;
+		byte[] recBuffer = new byte[2048];
+		int bufferSize = 2048;
 		int dataSize;
 		byte error;
 
@@ -153,7 +156,7 @@ public class NetworkController
 					
 					// add connection to connection list
 					ClientNetworkManager manager =
-						new ClientNetworkManager(remoteHostID, remoteConnectionID, unreliableChannelID, stateUpdateChannelID);
+						new ClientNetworkManager(remoteHostID, remoteConnectionID, unreliableChannelID, stateUpdateChannelID); //overrode state update channel
 					clientConnections.Add(remoteConnectionID, manager);
 					StateUpdateMessage stateUpdateMessage = new StateUpdateMessage(3);
 					manager.sendMessage(stateUpdateMessage.toByteArray());
@@ -229,15 +232,18 @@ public class NetworkController
 		}
 		if (localPlayerReady)
 		{
-			message += "Ready!\n ";
+			message += "Ready! \n ";
 		}
 		else
 		{
 			message += "Pending...\n ";
 		}
+		
+		//Debug.Log(message);
 
 		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
 		{
+			
 			if (!NetworkConfiguration.isHost && kvp.Key == hostConnectionID)
 			{
 				message += "(HOST) ";
@@ -245,13 +251,17 @@ public class NetworkController
 			message += kvp.Value.getIdentifier() + ": ";
 			if (kvp.Value.isReady())
 			{
-				message += "Ready!\n ";
+				//Debug.Log("Ready! \n");
+				message += "Ready! \n"; // not executing??
 			}
 			else
 			{
-				message += "Pending...\n ";
+				//Debug.Log("Player Pending: " + kvp.Value.getIdentifier());
+				message += "Pending... \n"; // not executing?
 			}
 		}
+		
+		//Debug.Log(message);
 
 		ConnectedPlayersMessage = message;
 	}
@@ -381,24 +391,32 @@ public class NetworkController
 
 	public void startGame()
 	{
-		int i = 1;
+		int i = 0;
+		NetworkConfiguration.allowConnections = false;
 
 		string[] ids = new string[currentConnections];
 		int[] spawns = new int[currentConnections];
 		
 		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
 		{
-			kvp.Value.setSpawnPoint(i);
+			kvp.Value.setSpawnPoint(i+1);
 			ids[i] = kvp.Value.getIdentifier();
-			spawns[i] = i;
+			spawns[i] = i+1;
+			Debug.Log("Send: " + ids[i]);
+			Debug.Log("Spawn at: spawn" + spawns[i]);
 			i++;
+			
 		}
 
-		localSpawn = i;
-
-		// create message and broadcast
+		localSpawn = i+1;
+		
+		StartGameMessage startMessage = new StartGameMessage(ids, spawns, localSpawn);
+		Debug.Log("Start message of size: " + startMessage.toByteArray().Length);
+		broadcastMessage(startMessage.toByteArray());
+		Debug.Log("Sent Start Message!");
 	}
 
+	/*
 	public void spawnPlayers()
 	{
 		// spawn remote players
@@ -407,5 +425,56 @@ public class NetworkController
 			kvp.Value.spawnPlayer(false);
 		}
 		// spawn local player
+		
+	}
+	*/
+
+	public void setSpawns(string[] ids, int[] spawnIDs, int hostSpawnID)
+	{
+		ClientNetworkManager manager = null;
+		if (clientConnections.TryGetValue(hostConnectionID, out manager))
+		{
+			Debug.Log("Host spawn ID: " + hostSpawnID);
+			manager.setSpawnPoint(hostSpawnID);
+		}
+		Dictionary<string, int> spawnMap = new Dictionary<string, int>(ids.Length);
+		for (int i = 0; i < ids.Length; i++)
+		{
+			Debug.Log("Current: " + ids[i]);
+			Debug.Log("Current size: " + ids[i].Length);
+			Debug.Log("Local: " + NetworkConfiguration.playerName);
+			Debug.Log("Local size: " + NetworkConfiguration.playerName.Length);
+			Debug.Log("Comparison: " + ids[i].Equals(NetworkConfiguration.playerName));
+			if (ids[i].Equals(NetworkConfiguration.playerName))
+			{
+				Debug.Log("Local spawn ID: " + spawnIDs[i]);
+				localSpawn = spawnIDs[i];
+			}
+			else
+			{
+				spawnMap.Add(ids[i], spawnIDs[i]);
+			}
+		}
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			int spawnID;
+			if (kvp.Key != hostConnectionID && spawnMap.TryGetValue(kvp.Value.getIdentifier(), out spawnID))
+			{
+				kvp.Value.setSpawnPoint(spawnID);
+			}
+		}
+	}
+
+	public Dictionary<int, ClientNetworkManager> getSpawns()
+	{
+		Dictionary<int, ClientNetworkManager> spawnManagers = new Dictionary<int, ClientNetworkManager>(currentConnections+1);
+
+		foreach (KeyValuePair<int, ClientNetworkManager> kvp in clientConnections)
+		{
+			spawnManagers.Add(kvp.Value.getSpawnPoint(), kvp.Value);
+		}
+		spawnManagers.Add(localSpawn, null);
+
+		return spawnManagers;
 	}
 }
